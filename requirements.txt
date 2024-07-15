@@ -1,6 +1,6 @@
-vllm
+vllm # Great for fast, memory-efficient inference
 torch
-transformers
+transformers # off-the-shelf from huggingface. Contains llama 3
 alpaca_eval @ git+https://github.com/nelson-liu/alpaca_eval.git@forward_kwargs_to_vllm
 xopen
 tqdm

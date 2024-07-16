@@ -62,6 +62,7 @@ def run_iterate_batches(
     raise NotImplementedError
 
 
+from cs336_alignment.parsing_utils import parse_mmlu_response
 def run_parse_mmlu_response(
     mmlu_example: dict[str, Any],
     model_output: str,
@@ -85,6 +86,7 @@ def run_parse_mmlu_response(
         str (one of "A", "B", "C", or "D") if the model output can be parsed into a prediction,
         else None.
     """
+    return parse_mmlu_response(model_output)
     raise NotImplementedError
 
 

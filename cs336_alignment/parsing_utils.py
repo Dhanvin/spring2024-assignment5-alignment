@@ -1,6 +1,42 @@
 from typing import Any, Dict, Tuple, Iterator, List
 import regex as re
+import pathlib
 
+def construct_eval_prompt_template(instruction_file_name):
+    # Get System prompt
+    prompt_dir = pathlib.Path(__file__).parent /'prompts'
+    system_prompt_file = prompt_dir / 'zero_shot_system_prompt.prompt'
+    with open(system_prompt_file, 'r') as f:
+        system_prompt_template = f.read()
+
+
+    # Get Eval instruction for system prompt
+    instruction_file = prompt_dir / instruction_file_name
+    with open(instruction_file, 'r') as f:
+        instruction_prompt = f.read()
+
+    task_specific_prompt_template = system_prompt_template.format(instruction=instruction_prompt)
+    return task_specific_prompt_template
+
+def parse_gsm8k_response(
+    model_output: str,
+) -> str | None:
+    """
+    Given a GSM8K model output, parse the model output into a predicted numeric answer by
+    taking the last number that occurs in the output.
+
+    model_output: str
+        str with the model's output to a GSM8K example.
+
+    Returns:
+        str with the predicted numeric answer if the model output can be parsed into a prediction,
+        else None.
+    """
+    # The re.DOTALL flag makes the . special character match any character, including newline characters
+    last_number_pattern = re.compile('(\d+)(?!.*\d)', re.DOTALL)
+    match = re.search(last_number_pattern, model_output)
+    return match.group() if match else None
+        
 def parse_mmlu_response(
     model_output: str,
 ) -> str | None:

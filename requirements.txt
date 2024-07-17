@@ -5,3 +5,4 @@ alpaca_eval @ git+https://github.com/nelson-liu/alpaca_eval.git@forward_kwargs_t
 xopen
 tqdm
 huggingface_hub # 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
+pandas

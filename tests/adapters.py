@@ -89,7 +89,7 @@ def run_parse_mmlu_response(
     return parse_mmlu_response(model_output)
     raise NotImplementedError
 
-
+from cs336_alignment.parsing_utils import parse_gsm8k_response
 def run_parse_gsm8k_response(
     model_output: str,
 ) -> str | None:
@@ -104,6 +104,7 @@ def run_parse_gsm8k_response(
         str with the predicted numeric answer if the model output can be parsed into a prediction,
         else None.
     """
+    return parse_gsm8k_response(model_output)
     raise NotImplementedError
 
 

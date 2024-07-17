@@ -62,7 +62,7 @@ def parse_mmlu_example(
     }
 
     
-def mmlu_example_generator(fp, chunk_size=1024) -> Iterator[Dict]:
+def mmlu_example_generator(fp, chunk_size=8192) -> Iterator[Dict]:
     buffer = ""
     read_size = chunk_size # Adaptive. We will increase if the example doesn't fit.
 
@@ -84,8 +84,10 @@ def mmlu_example_generator(fp, chunk_size=1024) -> Iterator[Dict]:
             total_example_cnt += examples_extracted_within_buffer
             buffer =  buffer[buffer_local_offset:] # Remove portion of buffer that's already read
             
+            # Give up. Stop parsing if we are unable to extract
             if examples_extracted_within_buffer == 0:
-                read_size *= 2 # We need to increase read size
+                # read_size *= 2 # We need to increase read size
+                break
                         
         except StopIteration:
             # We have reached the end of file

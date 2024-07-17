@@ -144,7 +144,7 @@ def main(eval_dir, model_name_or_path, output_dir_str):
       temperature=0.0, top_p=1.0, max_tokens=1024, stop=["\n"]
     )
     task_specific_prompt_template = _construct_mmlu_eval_prompt_template()
-    N_FILES = 3
+    N_FILES = 20
     random.seed(42)
     # eval_dir_path = pathlib.Path(__file__).parent.parent / 'data' / 'mmlu' / 'dev'
     eval_files = os.listdir(eval_dir_path)
@@ -152,7 +152,7 @@ def main(eval_dir, model_name_or_path, output_dir_str):
         return '_'.join(pathlib.Path(filename).stem.split('_')[:-1])
     files = random.sample(eval_files, min(N_FILES, len(eval_files)))
 
-    BATCH_SIZE = 16
+    BATCH_SIZE = 32
     dispatcher = BatchPromptDispatcher(BATCH_SIZE, model, sampling_params)
     all_results = []
     all_results = []

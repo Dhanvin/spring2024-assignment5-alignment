@@ -18,19 +18,16 @@ import argparse
 import json
 
 from cs336_alignment.parsing_utils import parse_mmlu_response, mmlu_example_generator
-from vllm import LLM, SamplingParams
 from tqdm import tqdm
 from dataclasses import dataclass
 from typing import List
 
+from vllm import LLM, SamplingParams
 from huggingface_hub import HfFolder
 
 
 logger = logging.getLogger(__name__)
 HfFolder.save_token("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")
-
-# TODO: Use batch-inference mode. Create a simple BatchQuery class which accumulates prompts,
-# dispatches to the model based on batch-size and 
 
 @dataclass
 class MmluEvalUnit:

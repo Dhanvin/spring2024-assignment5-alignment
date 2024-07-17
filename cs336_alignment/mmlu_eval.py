@@ -84,7 +84,7 @@ class BatchPromptDispatcher():
     
     def query_and_flush(self) -> List[MmluEvalUnit]:
         # Query model with batch
-        prompts = [k for k, _ in self.prompt_responses]
+        prompts = [k for k in self.prompt_responses.keys()]
 
         # Generate texts from the prompts. The output is a list of RequestOutput objects 
         # that contain the prompt, generated text, and other information.
@@ -102,11 +102,11 @@ class BatchPromptDispatcher():
         # and then starts the next conversation turn (with # Query:). 
         # Thus, when we see the string # Query: we can stop response generation.
         else: 
-            for prompt, _ in self.prompt_responses:
+            for prompt in self.prompt_responses.keys():
                 self.prompt_responses[prompt] = prompt + f"The correct answer is {self.prompt_gt[prompt]}.```"
 
         # Procure results
-        output = [MmluEvalUnit(prompt, resp, parse_mmlu_response(resp), self.prompt_gt[prompt]) for prompt, resp in self.prompt_responses.keys()]
+        output = [MmluEvalUnit(prompt, resp, parse_mmlu_response(resp), self.prompt_gt[prompt]) for prompt, resp in self.prompt_responses.items()]
         self.prompt_responses = {}
         self.prompt_gt = {}
         return output
@@ -129,12 +129,15 @@ def _construct_mmlu_eval_prompt_template():
     return task_specific_prompt_template
 
 # Create prompts from eval set
-def main(eval_dir, model_name_or_path, output_dir):
+def main(eval_dir, model_name_or_path, output_dir_str):
     eval_dir_path = pathlib.Path(eval_dir)
     
-    # model = LLM(model=model_name_or_path)
-    model = None
-    
+    model = LLM(model=model_name_or_path)
+    # model = None
+    # Create a sampling params object, stopping generation on newline.
+    sampling_params = SamplingParams(
+      temperature=0.0, top_p=1.0, max_tokens=1024, stop=["\n"]
+    )
     task_specific_prompt_template = _construct_mmlu_eval_prompt_template()
     N_FILES = 3
     random.seed(42)
@@ -145,7 +148,7 @@ def main(eval_dir, model_name_or_path, output_dir):
     files = random.sample(eval_files, min(N_FILES, len(eval_files)))
 
     BATCH_SIZE = 16
-    dispatcher = BatchPromptDispatcher(BATCH_SIZE, model)
+    dispatcher = BatchPromptDispatcher(BATCH_SIZE, model, sampling_params)
     all_results = []
     all_results = []
     for file_name in tqdm(files):
@@ -157,7 +160,7 @@ def main(eval_dir, model_name_or_path, output_dir):
                 model_prompt = task_specific_prompt_template.format(subject = subject_str,
                                                                     question = parsed_example['question'],
                                                                     options = parsed_example['options']) 
-                batch_results = dispatcher.add(model_prompt)
+                batch_results = dispatcher.add(model_prompt, parsed_example['answer'])
                 if batch_results is not None:
                     all_results += batch_results
             
@@ -169,10 +172,14 @@ def main(eval_dir, model_name_or_path, output_dir):
                     
         # Write eval results to file. 
         # Generate a summary.txt file for a) overall summary and b) per-subject stats
+        output_dir_path = pathlib.Path(output_dir_str) / model_name_or_path / eval_dir_path.stem
         # Create a dir for the model
-        os.mkdir(output_dir / model_name_or_path)
-        output_dir =  output_dir / model_name_or_path / eval_dir_path.stem
-        generate_summary(all_results, subject_str, deep_dive_file_path = output_dir / file_name)
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+        # Create JSONL path
+        file_path = output_dir_path / file_name
+        deep_dive_file_name = str(file_path.stem) + '.jsonl'
+        generate_summary(all_results, subject_str, deep_dive_file_path = output_dir_path / deep_dive_file_name )
 
 
 # Create a file Parser
@@ -189,7 +196,7 @@ if __name__ == "__main__":
         help="Path to data-directory for topic-wise MMLU evaluation csv files.",
     )
     parser.add_argument(
-        "--model-name-or-path", help="HF name of the model to use", required=True
+        "--model-name", help="HF name of the model to use", required=True
     )
     parser.add_argument(
         "--output-path",
@@ -200,8 +207,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.info("running %s", " ".join(sys.argv))
     main(
-        args.input_path,
-        args.model_name_or_path,
+        args.eval_dir,
+        args.model_name,
         args.output_path
     )
     logger.info("finished running %s", sys.argv[0])

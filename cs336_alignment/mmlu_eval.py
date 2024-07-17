@@ -42,13 +42,10 @@ class MmluEvalUnit:
 @dataclass
 class MmluEvalSummary:
     subject: str
-    correct: int
-    incorrect: int
-    sampled_failures: List[MmluEvalUnit]
+    metric_summary: str
     deep_dive_file_path: str
     
 def generate_summary(eval_units: List[MmluEvalUnit], subject: str, deep_dive_file_path: pathlib.Path) -> MmluEvalSummary:
-    #
     all_metrics = []
     with open(deep_dive_file_path, "w") as fout:
         for eval_unit in tqdm(eval_units):
@@ -67,9 +64,19 @@ def generate_summary(eval_units: List[MmluEvalUnit], subject: str, deep_dive_fil
                 )
                 + "\n"
             )
+
+    metric_summary_str = ''  
     for key in sorted(list(all_metrics[0].keys())):
         metric_mean = sum([metrics[key] for metrics in all_metrics]) / len(all_metrics)
-        logger.info(f"Mean({key}): {metric_mean}")
+        metric_str = f"Mean({key}): {metric_mean}\n"
+        metric_summary_str += metric_str
+        logger.info(metric_str)
+    
+    return MmluEvalSummary(
+        subject= subject,
+        metric_summary=metric_summary_str,
+        deep_dive_file_path = str(deep_dive_file_path),
+    )
 
 
 class BatchPromptDispatcher():
@@ -136,29 +143,31 @@ def _construct_mmlu_eval_prompt_template():
 # Create prompts from eval set
 def main(eval_dir, model_name_or_path, output_dir_str):
     eval_dir_path = pathlib.Path(eval_dir)
-    
     model = LLM(model=model_name_or_path)
     # model = None
+
     # Create a sampling params object, stopping generation on newline.
     sampling_params = SamplingParams(
       temperature=0.0, top_p=1.0, max_tokens=1024, stop=["\n"]
     )
     task_specific_prompt_template = _construct_mmlu_eval_prompt_template()
-    N_FILES = 20
-    random.seed(42)
-    # eval_dir_path = pathlib.Path(__file__).parent.parent / 'data' / 'mmlu' / 'dev'
     eval_files = os.listdir(eval_dir_path)
-    def get_subject_from_filename(filename: str):
-        return '_'.join(pathlib.Path(filename).stem.split('_')[:-1])
-    files = random.sample(eval_files, min(N_FILES, len(eval_files)))
+    
+    ## Samlpe a subset of files for testing
+    # N_FILES = 20
+    # random.seed(42)
+    # files = random.sample(eval_files, min(N_FILES, len(eval_files)))
 
+    # Generate examples
+    def _get_subject_from_filename(filename: str):
+        return '_'.join(pathlib.Path(filename).stem.split('_')[:-1])
     BATCH_SIZE = 32
     dispatcher = BatchPromptDispatcher(BATCH_SIZE, model, sampling_params)
     all_results = []
-    all_results = []
-    for file_name in tqdm(files):
+    all_summary = []
+    for file_name in tqdm(eval_files):
         file_path = eval_dir_path / file_name
-        subject_str = get_subject_from_filename(file_path.stem)
+        subject_str = _get_subject_from_filename(file_path.stem)
         print(f"Processing {file_path}")
         with open(file_path, 'r') as f:
             for parsed_example in mmlu_example_generator(f):
@@ -184,7 +193,21 @@ def main(eval_dir, model_name_or_path, output_dir_str):
         # Create JSONL path
         file_path = output_dir_path / file_name
         deep_dive_file_name = str(file_path.stem) + '.jsonl'
-        generate_summary(all_results, subject_str, deep_dive_file_path = output_dir_path / deep_dive_file_name )
+        all_summary.append(generate_summary(all_results, subject_str, deep_dive_file_path = output_dir_path / deep_dive_file_name ))
+    
+    
+    with open(output_dir_path / 'metric_summary.jsonl', "w") as fout:
+        for summary in all_summary:
+            fout.write(
+                json.dumps(
+                    {
+                        "subject": summary.subject,
+                        "metric_summary": summary.metric_summary,
+                        "deep_dive_file_path": summary.deep_dive_file_path,
+                    }
+                )
+                + "\n"
+            )
 
 
 # Create a file Parser

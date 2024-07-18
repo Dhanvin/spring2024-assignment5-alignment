@@ -45,7 +45,7 @@ def _write_gsm8k_eval_results(eval_units: List[Gsm8kEvalUnit], output_file_path:
     with open(output_file_path, "w") as fout:
         for eval_unit in tqdm(eval_units):
             metrics = {
-                "accurate": 1.0 if abs(float(eval_unit.model_answer) - float(eval_unit.ground_truth_answer)) < TOL else 0.0
+                "accurate": 1.0 if eval_unit.model_answer is not None and abs(float(eval_unit.model_answer) - float(eval_unit.ground_truth_answer)) < TOL else 0.0
             }
             all_metrics.append(metrics)
 

@@ -8,30 +8,30 @@ pip install -e .'[test]'
 
 # MMLU
 python cs336_alignment/mmlu_eval.py \
---eval-dir='/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/mmlu/dev' \
+--eval-dir='/home/ubuntu/spring2024-assignment5-alignment/data/mmlu/dev' \
 --model-name='meta-llama/Meta-Llama-3-8B' \
---output-path='/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/model_predictions_store/mmlu/'
+--output-path='/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store/mmlu/'
 
 # GSM8K
 python -m cs336_alignment.gsm8k_eval \
---eval-file="/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/gsm8k/test.jsonl" \
+--eval-file="/home/ubuntu/spring2024-assignment5-alignment/data/gsm8k/test.jsonl" \
 --model-name="meta-llama/Meta-Llama-3-8B" \
---output-dir="/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/model_predictions_store/gsm8k/eval_results"
+--output-dir="/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store/gsm8k/eval_results"
 
 # Safety
 python -m cs336_alignment.simple_safety_model_predictions \
---eval-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/simple_safety_tests/simple_safety_tests.csv" \
+--eval-file "/home/ubuntu/spring2024-assignment5-alignment/data/simple_safety_tests/simple_safety_tests.csv" \
 --model-name "meta-llama/Meta-Llama-3-8B" \
---output-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/model_predictions_store/simple_safety_tests/meta-llama_3_8b_predictions.jsonl"
+--output-file "/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store/simple_safety_tests/meta-llama_3_8b_predictions.jsonl"
 
 # Chat
 python -m cs336_alignment.generic_chat_model_predictions \
---eval-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/alpaca_eval/alpaca_eval.jsonl" \
+--eval-file "/home/ubuntu/spring2024-assignment5-alignment/data/alpaca_eval/alpaca_eval.jsonl" \
 --model-name "meta-llama/Meta-Llama-3-8B" \
---output-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/model_predictions_store/alpaca/meta-llama_3_8b_predictions.jsonl"
+--output-file "/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store/alpaca/meta-llama_3_8b_predictions.jsonl"
 
 ## Chat preferences with Llama-70B
-alpaca_eval --model_outputs "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/alpaca_eval/meta-llama_3_8b_predictions.jsonl" \
+alpaca_eval --model_outputs "/home/ubuntu/spring2024-assignment5-alignment/data/alpaca_eval/meta-llama_3_8b_predictions.jsonl" \
 --annotators_config 'scripts/alpaca_eval_vllm_llama3_70b_fn' \
 --base-dir '.'
 
@@ -40,11 +40,11 @@ python scripts/evaluate_safety.py \
 --input-path <path_to_model_predictions.jsonl> \
 --model-name-or-path /home/shared/Meta-Llama-3-70B-Instruct \
 --num-gpus 2 \
---output-path "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/simple_safety_tests/meta-llama_3_8b_predictions.jsonl"
+--output-path "/home/ubuntu/spring2024-assignment5-alignment/data/simple_safety_tests/meta-llama_3_8b_predictions.jsonl"
 
 /Users/rajvimehta/Dhanvin-Code/cs336/spring2024-assignment5-alignment/model_predictions_store
 ## Copy out files to local machine
-scp -r ubuntu@192.9.136.26:/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/model_predictions_store \
+scp -r ubuntu@192.9.136.26:/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store \
 /Users/rajvimehta/Dhanvin-Code/cs336/
 
 

@@ -19,7 +19,6 @@ import json
 
 from cs336_alignment.parsing_utils import parse_gsm8k_response, construct_eval_prompt_template
 from vllm import LLM, SamplingParams
-from tqdm import tqdm
 from dataclasses import dataclass
 from typing import List
 
@@ -51,19 +50,31 @@ def main(eval_file_path, model_name, num_gpus, output_file):
     eval_responses_df = eval_examples_df.copy()
 
     # Populate output dataframe
-    DEBUG_SMALL = True
+    # TODO: Figure out why even H100 takes so long to process this. Is it because we are in a DF loop?
+    prompt_to_id = {}
+    for row in eval_examples_df.itertuples(index=True, name='ChatExample'):
+        prompt = generic_chat_prompt_template.format(instruction = row.instruction)
+        prompt_to_id[prompt] = row.Index
+    
+
+    # Query model with full batch. The output is a list of RequestOutput objects 
+    # that contain the prompt, generated text, and other information.
+    prompts = [k for k in prompt_to_id.keys()]
+    outputs = model.generate(prompts, sampling_params) if model is not None else ["No Model; No output" for prompt in prompts]
+    model_responses = {}
+    # Print the outputs.
+    for output in outputs:
+        prompt = output.prompt
+        generated_text = output.outputs[0].text.strip()
+        model_responses[prompt_to_id[prompt]] = generated_text
+
+    # Procure results
     for row in eval_examples_df.itertuples(index=True, name='ChatExample'):
         eval_responses_df.at[row.Index, "instruction"] = row.instruction
         eval_responses_df.at[row.Index, "dataset"] = row.dataset
-
-        prompt = generic_chat_prompt_template.format(instruction = row.instruction)
-        eval_responses_df.at[row.Index, "output"] = model.generate(prompt, sampling_params)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
+        eval_responses_df.at[row.Index, "output"] = model_responses[row.Index]
         eval_responses_df.at[row.Index, "generator"] = model_name 
 
-        if DEBUG_SMALL and row.Index > 10:
-            break
-    
-                       
     # Write eval results to file. 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     eval_responses_df.to_json(output_file, orient='records', lines=True)

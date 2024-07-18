@@ -49,21 +49,33 @@ def main(eval_file_path, model_name, num_gpus, output_file):
     # Read .jsonl file into a dataframe
     eval_examples_df = pd.read_csv(eval_file_path)
     eval_responses_df = eval_examples_df.copy()
-    eval_responses_df["output"] = eval_responses_df["prompts_final"] # will be over-written
+    eval_responses_df.drop(columns=['id', 'counter'])
 
-    # Make model calls. Construct prompt. Populate output dataframe
-    DEBUG_SMALL = True
-    for row in tqdm(eval_examples_df.itertuples(index=True, name='SafetyExample')):
-        eval_responses_df.at[row.Index, "prompts_final"] = row.prompts_final
+    # Populate output dataframe
+    # TODO: Figure out why even H100 takes so long to process this. Is it because we are in a DF loop?
+    prompt_to_id = {}
+    for row in eval_examples_df.itertuples(index=True, name='ChatExample'):
         prompt = generic_chat_prompt_template.format(instruction = row.prompts_final)
-        eval_responses_df.at[row.Index, "output"] = model.generate(prompt, sampling_params)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
+        prompt_to_id[prompt] = row.Index
+    
+    # Query model with full batch. The output is a list of RequestOutput objects 
+    # that contain the prompt, generated text, and other information.
+    prompts = [k for k in prompt_to_id.keys()]
+    outputs = model.generate(prompts, sampling_params) if model is not None else ["No Model; No output" for prompt in prompts]
+    model_responses = {}
+    # Print the outputs.
+    for output in outputs:
+        prompt = output.prompt
+        generated_text = output.outputs[0].text.strip()
+        model_responses[prompt_to_id[prompt]] = generated_text
+
+    # Procure results
+    for row in eval_examples_df.itertuples(index=True, name='SafetyExample'):
+        eval_responses_df.at[row.Index, "instruction"] = row.prompts_final
         eval_responses_df.at[row.Index, "harm_area"] = row.harm_area
         eval_responses_df.at[row.Index, "category"] = row.category
+        eval_responses_df.at[row.Index, "output"] = model_responses[row.Index]
         eval_responses_df.at[row.Index, "generator"] = model_name 
-
-        if DEBUG_SMALL and row.Index > 10:
-            break
-    
                        
     # Write eval results to file. 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)

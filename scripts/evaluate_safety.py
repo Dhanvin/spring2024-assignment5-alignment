@@ -22,8 +22,10 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 from vllm import LLM, SamplingParams
 from xopen import xopen
+from huggingface_hub import HfFolder
 
 logger = logging.getLogger(__name__)
+HfFolder.save_token("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")
 
 
 def main(input_path, model_name_or_path, num_gpus, output_path):

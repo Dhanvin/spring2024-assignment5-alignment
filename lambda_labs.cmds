@@ -1,3 +1,6 @@
+## Huggingface token?
+export HUGGINGFACE_TOKEN='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'
+
 ## Setup on new system
 git config --global credential.helper store
 # >> See Colab to clone with Personal access token: https://colab.research.google.com/drive/1lgVDhAK5OYyyoFiLGiRzprBgN82bnJXX#scrollTo=wC-7m1muGCoC

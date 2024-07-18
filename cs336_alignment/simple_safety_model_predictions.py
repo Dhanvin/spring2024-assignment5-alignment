@@ -46,12 +46,17 @@ def main(eval_file_path, model_name, output_file):
     eval_responses_df = eval_examples_df.copy()
     eval_responses_df["output"] = eval_responses_df["prompts_final"] # will be over-written
 
-    # Process dataframe: construct a prompt
+    # Make model calls. Construct prompt
+    if model is not None:
+        model_responses = {row.Index: model.generate(generic_chat_prompt_template.format(instruction = row.prompts_final))[0].outputs[0].text.strip() for row in tqdm(eval_examples_df.itertuples(index=True, name='ChatExample'))}
+        # model_responses = {row.Index: model.generate(row.prompts_final)[0].outputs[0].text.strip() for row in tqdm(eval_examples_df.itertuples(index=True, name='ChatExample'))}
+    else:
+        model_responses = {row.Index: "No Model; No output" for row in tqdm(eval_examples_df.itertuples(index=True, name='ChatExample'))}
+
+    # Populate output dataframe
     for row in tqdm(eval_examples_df.itertuples(index=True, name='SafetyExample')):
-        model_prompt = generic_chat_prompt_template.format(instruction = row.prompts_final) 
         eval_responses_df.at[row.Index, "prompts_final"] = row.prompts_final
-        # eval_responses_df.at[row.Index, "output"] = model.generate(model_prompt)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
-        eval_responses_df.at[row.Index, "output"] = model.generate(model_prompt)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
+        eval_responses_df.at[row.Index, "output"] =  model_responses[row.Index]
         eval_responses_df.at[row.Index, "harm_area"] = row.harm_area
         eval_responses_df.at[row.Index, "category"] = row.category
         eval_responses_df.at[row.Index, "generator"] = model_name 

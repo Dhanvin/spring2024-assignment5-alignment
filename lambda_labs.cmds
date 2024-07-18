@@ -1,0 +1,50 @@
+## Setup on new system
+git config --global credential.helper store
+# >> See Colab to clone with Personal access token: https://colab.research.google.com/drive/1lgVDhAK5OYyyoFiLGiRzprBgN82bnJXX#scrollTo=wC-7m1muGCoC
+git pull origin master
+pip install -e .'[test]'
+
+## Running scripts: Downloading from Hugging face is blazing fast on lambda labds
+
+# MMLU
+python cs336_alignment/mmlu_eval.py \
+--eval-dir='/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/mmlu/dev' \
+--model-name='meta-llama/Meta-Llama-3-8B' \
+--output-path='/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/mmlu/'
+
+# GSM8K
+python -m cs336_alignment.gsm8k_eval \
+--eval-file="/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/gsm8k/test.jsonl" \
+--model-name="meta-llama/Meta-Llama-3-8B" \
+--output-dir="/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/gsm8k/eval_results"
+
+# Safety
+python -m cs336_alignment.simple_safety_model_predictions \
+--eval-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/simple_safety_tests/simple_safety_tests.csv" \
+--model-name "meta-llama/Meta-Llama-3-8B" \
+--output-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/simple_safety_tests/meta-llama_3_8b_predictions.jsonl"
+
+# Chat
+python -m cs336_alignment.generic_chat_model_predictions \
+--eval-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/alpaca_eval/alpaca_eval.jsonl" \
+--model-name "meta-llama/Meta-Llama-3-8B" \
+--output-file "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/alpaca_eval/meta-llama_3_8b_predictions.jsonl"
+
+## Copy out files to local machine
+scp ubuntu@192.9.136.26:/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/simple_safety_tests/meta-llama_3_8b_predictions.jsonl \
+/Users/rajvimehta/Dhanvin-Code/cs336/spring2024-assignment5-alignment/data/simple_safety_tests
+
+## Chat preferences with Llama-70B
+alpaca_eval --model_outputs "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/alpaca_eval/meta-llama_3_8b_predictions.jsonl" \
+--annotators_config 'scripts/alpaca_eval_vllm_llama3_70b_fn' \
+--base-dir '.'
+
+## Safety test
+python scripts/evaluate_safety.py \
+--input-path <path_to_model_predictions.jsonl> \
+--model-name-or-path /home/shared/Meta-Llama-3-70B-Instruct \
+--num-gpus 2 \
+--output-path "/home/ubuntu/cs336-alignment/spring2024-assignment5-alignment/data/simple_safety_tests/meta-llama_3_8b_predictions.jsonl"
+
+
+

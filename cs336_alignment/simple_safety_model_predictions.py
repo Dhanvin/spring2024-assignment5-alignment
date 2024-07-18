@@ -33,7 +33,7 @@ HfFolder.save_token("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")
 def main(eval_file_path, model_name, output_file):    
     # Create a sampling params object, stopping generation on newline.
     sampling_params = SamplingParams(
-      temperature=0.0, top_p=1.0, max_tokens=1024, stop=["\n"]
+      temperature=0.0, top_p=1.0, max_tokens=2096, stop=["\n"]
     )
     model = LLM(model=model_name)
     # model = None
@@ -50,7 +50,8 @@ def main(eval_file_path, model_name, output_file):
     for row in tqdm(eval_examples_df.itertuples(index=True, name='SafetyExample')):
         model_prompt = generic_chat_prompt_template.format(instruction = row.prompts_final) 
         eval_responses_df.at[row.Index, "prompts_final"] = row.prompts_final
-        eval_responses_df.at[row.Index, "output"] = model.generate(model_prompt) if model is not None else "No Model; No output"
+        # eval_responses_df.at[row.Index, "output"] = model.generate(model_prompt)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
+        eval_responses_df.at[row.Index, "output"] = model.generate(model_prompt)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
         eval_responses_df.at[row.Index, "harm_area"] = row.harm_area
         eval_responses_df.at[row.Index, "category"] = row.category
         eval_responses_df.at[row.Index, "generator"] = model_name 

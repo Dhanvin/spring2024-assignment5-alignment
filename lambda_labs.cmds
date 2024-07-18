@@ -31,7 +31,7 @@ python -m cs336_alignment.generic_chat_model_predictions \
 --output-file "/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store/alpaca/meta-llama_3_8b_predictions.jsonl"
 
 ## Chat preferences with Llama-70B
-alpaca_eval --model_outputs "/home/ubuntu/spring2024-assignment5-alignment/data/alpaca_eval/meta-llama_3_8b_predictions.jsonl" \
+alpaca_eval --model_outputs "/home/ubuntu/spring2024-assignment5-alignment/model_predictions_store/alpaca/meta-llama_3_8b_predictions.jsonl" \
 --annotators_config 'scripts/alpaca_eval_vllm_llama3_70b_fn' \
 --base-dir '.'
 

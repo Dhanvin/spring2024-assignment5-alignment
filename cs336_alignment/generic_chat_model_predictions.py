@@ -30,12 +30,17 @@ logger = logging.getLogger(__name__)
 HfFolder.save_token("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")
 
 # Create prompts from eval set
-def main(eval_file_path, model_name, output_file):    
+def main(eval_file_path, model_name, num_gpus, output_file):    
     # Create a sampling params object, stopping generation on newline.
     sampling_params = SamplingParams(
       temperature=0.0, top_p=1.0, max_tokens=512
     )
-    model = LLM(model=model_name)
+    model = LLM(
+        model=model_name,
+        tensor_parallel_size=num_gpus,
+        trust_remote_code=True,
+        max_model_len=6144,
+    )
     # model = None
 
     # Prepare prompt template
@@ -86,11 +91,13 @@ if __name__ == "__main__":
         help="Path to write output predictions",
         required=True,
     )
+    parser.add_argument("--num-gpus", help="Number of GPUs to use", type=int, default=1)
     args = parser.parse_args()
     logger.info("running %s", " ".join(sys.argv))
     main(
         args.eval_file,
         args.model_name,
+        args.num_gpus,
         args.output_file
     )
     logger.info("finished running %s", sys.argv[0])

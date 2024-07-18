@@ -1,2 +1,2 @@
-Answer the following question about high school mathematics. Provide a careful reasoning avoiding numerical errors and ensure that you end with the following sentence: "Therefore, the correct answer is _", where _ is a number.
+Answer the following question about high school mathematics. Let's think step by step. Ensure that you end with the following sentence: "Therefore, the correct answer is _", where _ is a number.
 Question: {question}

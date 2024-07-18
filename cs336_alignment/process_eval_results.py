@@ -19,7 +19,7 @@ def process_mmlu_eval_results(file_path):
 
 
 file_path_vanilla_prompt = "/Users/rajvimehta/Dhanvin-Code/cs336/spring2024-assignment5-alignment/data/gsm8k/eval_results/eval_results.jsonl"
-file_path_crafted_prompt = "/Users/rajvimehta/Dhanvin-Code/cs336/spring2024-assignment5-alignment/data/gsm8k/eval_results/eval_results_explain_prompt.jsonl"
+file_path_crafted_prompt = "/Users/rajvimehta/Dhanvin-Code/cs336/spring2024-assignment5-alignment/data/gsm8k/eval_results/eval_results_single_sentence.jsonl"
 df_crafted_prompt = pd.read_json(file_path_crafted_prompt, lines=True) # since it is a .jsonl file
 df_vanilla_prompt = pd.read_json(file_path_vanilla_prompt, lines=True) # since it is a .jsonl file
 

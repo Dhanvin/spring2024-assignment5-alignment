@@ -9,6 +9,7 @@ class BatchPromptDispatcher():
     
     def add(self, prompt):
         self.prompt_responses[prompt] = 'NOT EXECUTED'
+        ## THIS BUG IS A FEATURE. Add actually does nothing. This whole class does nothing
         if self.prompt_responses == self.batch_size:
             return self.query_model_and_flush()
         return None

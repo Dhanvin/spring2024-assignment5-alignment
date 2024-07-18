@@ -33,7 +33,7 @@ HfFolder.save_token("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")
 def main(eval_file_path, model_name, num_gpus, output_file):    
     # Create a sampling params object, stopping generation on newline.
     sampling_params = SamplingParams(
-      temperature=0.0, top_p=1.0, max_tokens=512
+      temperature=0.0, top_p=1.0, max_tokens=512, stop=["```"]
     )
     model = LLM(
         model=model_name,

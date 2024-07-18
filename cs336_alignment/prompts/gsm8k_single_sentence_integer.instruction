@@ -1,2 +1,2 @@
-Answer the following question about mathematics in a single sentence of the form "The correct answer is _.", where _ is an integer number without any decimal points.
+Answer the following question about mathematics in a single sentence of the form "The correct answer is _.", where _ is a number.
 Question: {question}

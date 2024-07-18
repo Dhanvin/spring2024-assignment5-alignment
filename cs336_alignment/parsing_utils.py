@@ -33,7 +33,8 @@ def parse_gsm8k_response(
         else None.
     """
     # The re.DOTALL flag makes the . special character match any character, including newline characters
-    last_number_pattern = re.compile('(\d+)(?!.*\d)', re.DOTALL)
+    # Regular expression to match the last number with an optional single decimal point
+    last_number_pattern = re.compile('\d+(\.\d+)?(?!.*\d)', re.DOTALL)
     match = re.search(last_number_pattern, model_output)
     return match.group() if match else None
         

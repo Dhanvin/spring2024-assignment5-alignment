@@ -34,6 +34,7 @@ def parse_gsm8k_response(
     """
     # The re.DOTALL flag makes the . special character match any character, including newline characters
     # Regular expression to match the last number with an optional single decimal point
+    # TODO: Known limitation: Won't be able to parse numbers with commas. Eg. 12,002
     last_number_pattern = re.compile('\d+(\.\d+)?(?!.*\d)', re.DOTALL)
     match = re.search(last_number_pattern, model_output)
     return match.group() if match else None

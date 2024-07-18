@@ -13,7 +13,7 @@ class BatchPromptDispatcher():
             return self.query_model_and_flush()
         return None
     
-    def query_and_flush(self) -> List[MmluEvalUnit]:
+    def query_and_flush(self):
         # Query model with batch
         prompts = [k for k in self.prompt_responses.keys()]
 

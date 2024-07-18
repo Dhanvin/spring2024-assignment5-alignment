@@ -88,7 +88,7 @@ def main(eval_file_path, model_name_or_path, output_dir):
     all_results: List[Gsm8kEvalUnit] = []
     
     # Prepare prompt template
-    task_specific_prompt_template = construct_eval_prompt_template('gsm8k_single_sentence.instruction')
+    task_specific_prompt_template = construct_eval_prompt_template('gsm8k_explain.instruction')
 
 
     # Read .jsonl file into a dataframe
@@ -116,7 +116,7 @@ def main(eval_file_path, model_name_or_path, output_dir):
         all_results = [Gsm8kEvalUnit(question=row.question, model_response=row.answer, model_answer=row.ground_truth, ground_truth_answer=row.ground_truth) for row in eval_examples_df.itertuples(index=True, name='Gsm8kExample')]
                                  
     # Write eval results to file. 
-    output_file_path = pathlib.Path(output_dir) / 'eval_results_single_sentence.jsonl'
+    output_file_path = pathlib.Path(output_dir) / 'eval_results_explain.jsonl'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     _write_gsm8k_eval_results(all_results, output_file_path)

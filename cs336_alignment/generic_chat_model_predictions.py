@@ -43,21 +43,20 @@ def main(eval_file_path, model_name, output_file):
 
     # Read .jsonl file into a dataframe
     eval_examples_df = pd.read_json(eval_file_path, lines=True)
-
-    # Make model calls. Construct prompt
-    if model is not None:
-        model_responses = {row.Index: model.generate(generic_chat_prompt_template.format(instruction = row.instruction))[0].outputs[0].text.strip() for row in tqdm(eval_examples_df.itertuples(index=True, name='ChatExample'))}
-        # model_responses = {row.Index: model.generate(row.instruction)[0].outputs[0].text.strip() for row in tqdm(eval_examples_df.itertuples(index=True, name='ChatExample'))}
-    else:
-        model_responses = {row.Index: "No Model; No output" for row in tqdm(eval_examples_df.itertuples(index=True, name='ChatExample'))}
-    
-    # Populate output dataframe
     eval_responses_df = eval_examples_df.copy()
+
+    # Populate output dataframe
+    DEBUG_SMALL = True
     for row in eval_examples_df.itertuples(index=True, name='ChatExample'):
         eval_responses_df.at[row.Index, "instruction"] = row.instruction
         eval_responses_df.at[row.Index, "dataset"] = row.dataset
-        eval_responses_df.at[row.Index, "output"] =  model_responses[row.Index]
+
+        prompt = generic_chat_prompt_template.format(instruction = row.instruction)
+        eval_responses_df.at[row.Index, "output"] = model.generate(prompt, sampling_params)[0].outputs[0].text.strip() if model is not None else "No Model; No output"
         eval_responses_df.at[row.Index, "generator"] = model_name 
+
+        if DEBUG_SMALL and row.Index > 10:
+            break
     
                        
     # Write eval results to file. 

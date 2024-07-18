@@ -7,7 +7,7 @@ class BatchPromptDispatcher():
         self.llm = llm
         self.sampling_params = sampling_params
     
-    def add(self, prompt, ground_truth):
+    def add(self, prompt):
         self.prompt_responses[prompt] = 'NOT EXECUTED'
         if self.prompt_responses == self.batch_size:
             return self.query_model_and_flush()

@@ -67,10 +67,10 @@ def _write_gsm8k_eval_results(eval_units: List[Gsm8kEvalUnit], output_file_path:
         logger.info(metric_str)
 
 def _to_gsm8k_eval_units(prompt_responses, prompt_info) -> Gsm8kEvalUnit:
-    return [Gsm8kEvalUnit(question=prompt_info[prompt][1],
+    return [Gsm8kEvalUnit(question=prompt_info[prompt][0],
                          model_response=resp, 
                          model_answer=parse_gsm8k_response(resp),
-                         ground_truth_answer=prompt_info[prompt][3]) for prompt, resp in prompt_responses.items()]
+                         ground_truth_answer=prompt_info[prompt][1]) for prompt, resp in prompt_responses.items()]
 
 # Create prompts from eval set
 def main(eval_file_path, model_name_or_path, output_dir):    
